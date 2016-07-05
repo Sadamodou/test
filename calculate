@@ -1,0 +1,133 @@
+/**
+* 计算逆波兰表达式的值
+*/
+function calculate(RPolishArray) {
+    let result = 0;
+    let tempArray = new Array(100);
+    let tempNum = -1;
+    for (let i = 0; i < RPolishArray.length; i++) {
+        if (RPolishArray[i].match(/\d/)) {
+            tempNum++;
+            tempArray[tempNum] = RPolishArray[i];
+        }
+        else {
+            switch (RPolishArray[i]) {
+                case '+':
+                    result = (tempArray[tempNum - 1] * 1) + (tempArray[tempNum] * 1);
+                    tempNum--;
+                    tempArray[tempNum] = result;
+                    break;
+                case '-':
+                    result = (tempArray[tempNum - 1] * 1) - (tempArray[tempNum] * 1);
+                    tempNum--;
+                    tempArray[tempNum] = result;
+                    break;
+                case '*':
+                    result = (tempArray[tempNum - 1] * 1) * (tempArray[tempNum] * 1);
+                    tempNum--;
+                    tempArray[tempNum] = result;
+                    break;
+                case '/':
+                    result = (tempArray[tempNum - 1] * 1) / (tempArray[tempNum] * 1);
+                    tempNum--;
+                    tempArray[tempNum] = result;
+                    break;
+                default:
+                    tempArray[0] = 0;
+                    tempNum++;
+            }
+        }
+    }
+    result = tempArray[tempNum];
+    return result;
+}
+
+/**
+* 把普通算术表达式转换为逆波兰表达式
+*/
+function toRPolish(input) {
+    let regex = /(\(|\)|\+|\-|\*|\/)+/;
+    let array = input.split(regex);
+    if (array[0] == "") {
+        array.splice(0, 1);
+        //array.reverse();
+        array.splice(0, 0, "0");
+        input = "0" + input;
+    }
+    let RPolish = "";
+    let isI = false;
+    let num = 0;
+    let SymbolArray = new Array(100);
+    let SymbolNum = -1;
+    for (let j = 0; j <input.length; j++) {
+        if (input.charAt(j).match(/\d/)) {
+            if (isI == false) {
+                RPolish += ','
+                RPolish += array[num];
+                num=num+2;
+                isI = true;
+            }
+        }
+        else {
+            if (SymbolNum == -1) {
+                SymbolNum++;
+                SymbolArray[SymbolNum] = input.charAt(j);
+            } else {
+                if (input.charAt(j).match(/\(/) || SymbolArray[SymbolNum].match(/\(/)) {
+                    SymbolNum++;
+                    SymbolArray[SymbolNum] = input.charAt(j);
+                } else if (input.charAt(j).match(/\)/)) {
+                    while (!SymbolArray[SymbolNum].match(/\(/)) {
+                        RPolish += ',';
+                        RPolish += SymbolArray[SymbolNum];
+                        SymbolNum--;
+                    }
+                    SymbolNum--;
+                } else if (compare(input.charAt(j), SymbolArray[SymbolNum])) {
+                    SymbolNum++;
+                    SymbolArray[SymbolNum] = input.charAt(j);
+                } else if (!compare(input.charAt(j), SymbolArray[SymbolNum])) {
+                    RPolish += ',';
+                    RPolish += SymbolArray[SymbolNum];
+                    SymbolNum--;
+                    if (SymbolNum >= 0) {
+                        if (SymbolArray[SymbolNum].match(/\(/)) {
+                            SymbolNum++;
+                            SymbolArray[SymbolNum] = input.charAt(j);
+                        } else if (!compare(input.charAt(j), SymbolArray[SymbolNum])) {
+                            RPolish += ',';
+                            RPolish += SymbolArray[SymbolNum];
+                            SymbolArray[SymbolNum] = input.charAt(j);
+                        } else {
+                            SymbolNum++;
+                            SymbolArray[SymbolNum] = input.charAt(j);
+                        }
+                    } else {
+                        SymbolNum++;
+                        SymbolArray[SymbolNum] = input.charAt(j);
+                    }
+                }
+            }
+            isI = false;
+        }
+    }
+    while (SymbolNum >= 0) {
+        RPolish += ',';
+        RPolish += SymbolArray[SymbolNum];
+        SymbolNum--;
+    }
+    regex = /,/;
+    let RPolishArray = RPolish.split(regex);
+    return RPolishArray;
+}
+
+function compare(a, b) {
+    if ((a.match(/\*/) || a.match(/\//)) && (b.match(/\+/) || b.match(/\-/))) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+let a = prompt();
+alert(calculate(toRPolish(a)))
